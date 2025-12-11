@@ -1,17 +1,28 @@
 package com.example.integradorapodometro.data.remote
 
+import com.google.gson.GsonBuilder
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
+    private const val BASE_URL = "http://192.168.0.52:3000/"
 
-    private const val BASE_URL = "https://tu-api.com/api/"
+    private val logging = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
 
-    private val retrofit: Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(logging)
         .build()
 
-    val stepApi: StepApiService = retrofit.create(StepApiService::class.java)
+    private val gson = GsonBuilder().setLenient().create()
+
+    val retrofit: Retrofit = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .client(client)
+        .addConverterFactory(GsonConverterFactory.create(gson))
+        .build()
 }

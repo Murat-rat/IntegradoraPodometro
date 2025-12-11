@@ -1,75 +1,78 @@
 package com.example.integradorapodometro.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.integradorapodometro.ui.components.InputField
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.integradorapodometro.viewmodel.LoginViewModel
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel, navController: NavController) {
+fun LoginScreen(
+    onLoginSuccess: (String) -> Unit,
+    onRegisterClick: () -> Unit,
+    viewModel: LoginViewModel = viewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
+
+    // Navegación controlada para que no haga loop
+    LaunchedEffect(state.isLoggedIn) {
+        if (state.isLoggedIn) {
+            onLoginSuccess(state.username)
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
-
-        Text("Inicio de Sesión")
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Button(onClick = {}) {
-                Text("Iniciar Sesion")
-            }
-
-            Button(onClick = {}) {
-                Text("Registrarse")
-            }
-        }
-
-        InputField(
-            value = viewModel.username.value,
-            onValueChange = { viewModel.username.value = it },
-            label = "Usuario"
+        Text(
+            text = "Inicio de Sesión",
+            style = MaterialTheme.typography.headlineSmall
         )
 
-        InputField(
-            value = viewModel.password.value,
-            onValueChange = { viewModel.password.value = it },
-            label = "Contraseña"
+        OutlinedTextField(
+            value = state.username,
+            onValueChange = viewModel::onUsernameChange,
+            label = { Text("Usuario") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
 
-        if (viewModel.loginError.value.isNotEmpty()) {
+        OutlinedTextField(
+            value = state.password,
+            onValueChange = viewModel::onPasswordChange,
+            label = { Text("Contraseña") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+            // si quieres, puedes agregar visualTransformation para ocultarla
+        )
+
+        if (state.error != null) {
             Text(
-                text = viewModel.loginError.value,
-                color = Color.Red,
-                style = MaterialTheme.typography.bodyMedium
+                text = state.error!!,
+                color = MaterialTheme.colorScheme.error
             )
         }
 
-        Button(onClick = {}) {
-            Text("Iniciar Sesion")
-            viewModel.login {
-                navController.navigate("menu") {
-                    popUpTo("login") { inclusive = true } // Evita volver al login
-                }
+        if (state.isLoading) {
+            CircularProgressIndicator()
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Button(onClick = { viewModel.login() }) {
+                Text("Iniciar Sesión")
+            }
+            Button(onClick = onRegisterClick) {
+                Text("Registrarse")
             }
         }
     }

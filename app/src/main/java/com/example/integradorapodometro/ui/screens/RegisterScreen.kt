@@ -1,89 +1,67 @@
 package com.example.integradorapodometro.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.example.integradorapodometro.ui.components.InputField
-import com.example.integradorapodometro.viewmodel.LoginViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.integradorapodometro.viewmodel.RegisterViewModel
 
 @Composable
 fun RegisterScreen(
-    viewModel: LoginViewModel,
-    navController: NavController
+    onBackToLogin: () -> Unit,
+    viewModel: RegisterViewModel = viewModel()
 ) {
+    val state by viewModel.uiState.collectAsState()
+
+    if (state.isRegistered) {
+        // Cuando se registra, regresa al login
+        onBackToLogin()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(30.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
+        Text("Registro", style = MaterialTheme.typography.headlineSmall)
 
-        Text("Inicio de Sesión", style = MaterialTheme.typography.titleLarge)
+        OutlinedTextField(
+            value = state.username,
+            onValueChange = viewModel::onUsernameChange,
+            label = { Text("Usuario") },
+            singleLine = true
+        )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Botón login
-            Button(onClick = {
-                navController.navigate("login")
-            }) {
-                Text("Iniciar Sesión")
+        OutlinedTextField(
+            value = state.password,
+            onValueChange = viewModel::onPasswordChange,
+            label = { Text("Contraseña") },
+            singleLine = true
+        )
+
+        OutlinedTextField(
+            value = state.confirmPassword,
+            onValueChange = viewModel::onConfirmPasswordChange,
+            label = { Text("Confirmar contraseña") },
+            singleLine = true
+        )
+
+        if (state.error != null) {
+            Text(state.error!!, color = MaterialTheme.colorScheme.error)
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Button(onClick = onBackToLogin) {
+                Text("Cancelar")
             }
-
-            // Botón registro (estás en esta pantalla)
-            Button(onClick = {
-                // Si tienes ruta de registro separada, aquí la navegas.
-                // navController.navigate("register")
-            }) {
+            Button(onClick = { viewModel.register() }) {
                 Text("Registrarse")
             }
-        }
-
-        InputField(
-            value = viewModel.username.value,
-            onValueChange = { viewModel.username.value = it },
-            label = "Usuario"
-        )
-
-        InputField(
-            value = viewModel.password.value,
-            onValueChange = { viewModel.password.value = it },
-            label = "Contraseña"
-        )
-
-        if (viewModel.loginError.value.isNotEmpty()) {
-            Text(
-                text = viewModel.loginError.value,
-                color = Color.Red,
-                style = MaterialTheme.typography.bodyMedium
-            )
-        }
-
-        Button(
-            onClick = {
-                viewModel.login {
-                    navController.navigate("menu") {
-                        popUpTo("login") { inclusive = true } // Evita volver al login
-                    }
-                }
-            }
-        ) {
-            Text("Iniciar Sesión")
         }
     }
 }

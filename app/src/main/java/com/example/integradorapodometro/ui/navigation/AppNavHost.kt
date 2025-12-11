@@ -1,47 +1,51 @@
-package com.example.integradorapodometro.ui
+package com.example.integradorapodometro.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import com.example.integradorapodometro.ui.screens.LoginScreen
 import com.example.integradorapodometro.ui.screens.RegisterScreen
 import com.example.integradorapodometro.ui.screens.MyRoutesScreen
 import com.example.integradorapodometro.ui.screens.GlobalRoutesScreen
 import com.example.integradorapodometro.ui.screens.ActiveRouteScreen
 
-@Composable
-fun Navigation() {
-    val navController = rememberNavController()
+object Routes {
+    const val LOGIN = "login"
+    const val REGISTER = "register"
+    const val MY_ROUTES = "my_routes/{username}"
+    const val GLOBAL_ROUTES = "global_routes/{username}"
+    const val ACTIVE_ROUTE = "active_route/{username}"
+}
 
+@Composable
+fun AppNavHost(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = Routes.LOGIN,
+        modifier = modifier
     ) {
-        // ---------- LOGIN ----------
-        composable("login") {
+        composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess = { username ->
-                    navController.navigate("my_routes/$username") {
-                        popUpTo("login") { inclusive = true }
-                    }
+                    navController.navigate("my_routes/$username")
                 },
                 onRegisterClick = {
-                    navController.navigate("register")
+                    navController.navigate(Routes.REGISTER)
                 }
             )
         }
 
-        // ---------- REGISTRO ----------
-        composable("register") {
+        composable(Routes.REGISTER) {
             RegisterScreen(
-                onBackToLogin = {
-                    navController.popBackStack()
-                }
+                onBackToLogin = { navController.popBackStack() }
             )
         }
 
-        // ---------- MIS RECORRIDOS ----------
         composable("my_routes/{username}") { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             MyRoutesScreen(
@@ -55,7 +59,6 @@ fun Navigation() {
             )
         }
 
-        // ---------- RECORRIDOS GLOBALES ----------
         composable("global_routes/{username}") { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             GlobalRoutesScreen(
@@ -64,18 +67,19 @@ fun Navigation() {
                     navController.navigate("active_route/$username")
                 },
                 onViewMine = {
-                    navController.popBackStack()   // regresa a Mis Recorridos
+                    navController.navigate("my_routes/$username") {
+                        popUpTo("my_routes/$username") { inclusive = true }
+                    }
                 }
             )
         }
 
-        // ---------- RECORRIDO ACTIVO ----------
         composable("active_route/{username}") { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             ActiveRouteScreen(
                 username = username,
                 onFinish = {
-                    navController.popBackStack()  // vuelve a Mis Recorridos
+                    navController.popBackStack() // regresa a mis recorridos
                 }
             )
         }
