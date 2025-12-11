@@ -1,71 +1,82 @@
 package com.example.integradorapodometro.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.integradorapodometro.sensor.StepCounterManager
 import com.example.integradorapodometro.viewmodel.ActiveRouteViewModel
 import com.example.integradorapodometro.viewmodel.ActiveRouteViewModelFactory
-
 
 @Composable
 fun ActiveRouteScreen(
     username: String,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    viewModel: ActiveRouteViewModel = viewModel(
+        factory = ActiveRouteViewModelFactory(username)
+    )
 ) {
-    // Factory del ViewModel
-    val factory = remember { ActiveRouteViewModelFactory(username) }
+    val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
-    // ViewModel usando el factory
-    val viewModel: ActiveRouteViewModel = viewModel(factory = factory)
+    val stepManager = remember {
+        StepCounterManager(context) {
+            viewModel.onStepDetected()
+        }
+    }
 
-    // Leemos el estado directamente (sin collectAsState)
-    val state = viewModel.uiState.value
+    LaunchedEffect(state.guardadoOk) {
+        if (state.guardadoOk) {
+            onFinish()
+        }
+    }
 
-    // ------------ UI ------------
+    LaunchedEffect(Unit) {
+        viewModel.start()
+        stepManager.start()
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { stepManager.stop() }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(
-            16.dp,
-            alignment = Alignment.CenterVertically
-        )
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically)
     ) {
         val minutes = state.segundos / 60
         val seconds = state.segundos % 60
 
-        val minText = if (minutes < 10) "0$minutes" else "$minutes"
-        val secText = if (seconds < 10) "0$seconds" else "$seconds"
-        val timeText = "$minText:$secText"
+        Text(
+            text = String.format("%02d:%02d", minutes, seconds),
+            style = MaterialTheme.typography.headlineSmall
+        )
 
-        val distanciaRedondeada =
-            kotlin.math.round(state.distanciaKm * 100) / 100.0
-        val velocidadRedondeada =
-            kotlin.math.round(state.velocidadPromedio * 100) / 100.0
-
-        Text(timeText)
         Text("Pasos: ${state.pasos}")
-        Text("Distancia: $distanciaRedondeada km")
-        Text("Velocidad: $velocidadRedondeada km/h")
+        Text("Distancia: ${"%.2f".format(state.distanciaKm)} km")
+        Text("Velocidad: ${"%.2f".format(state.velocidadPromedio)} km/h")
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        if (state.error != null) {
+            Text(
+                text = state.error!!,
+                color = MaterialTheme.colorScheme.error
+            )
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { viewModel.pause() }) {
                 Text("Pausar recorrido")
             }
-            Button(onClick = {
-                viewModel.stopAndSave()
-                onFinish()
-            }) {
+            Button(onClick = { viewModel.stopAndSave() }) {
                 Text("Detener recorrido")
             }
         }

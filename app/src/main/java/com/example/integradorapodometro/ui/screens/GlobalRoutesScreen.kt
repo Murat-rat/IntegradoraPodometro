@@ -3,7 +3,6 @@ package com.example.integradorapodometro.ui.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -12,6 +11,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.integradorapodometro.ui.components.RecorridoCard
 import com.example.integradorapodometro.viewmodel.RecorridosViewModel
 import com.example.integradorapodometro.viewmodel.RecorridosViewModelFactory
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items   // ✅ agrega esto
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,15 +68,20 @@ fun GlobalRoutesScreen(
                 )
             }
 
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
                 items(state.globales) { recorrido ->
                     RecorridoCard(
                         recorrido = recorrido,
-                        onUpdateClick = { /* solo lectura aquí */ },
-                        onDeleteClick = { /* nada, no borras globales de otros */ }
+                        onUpdateClick = { },
+                        onDeleteClick = { }
                     )
                 }
             }
+
+
         }
     }
 }

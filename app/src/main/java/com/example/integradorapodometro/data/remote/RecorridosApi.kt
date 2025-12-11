@@ -1,22 +1,24 @@
 package com.example.integradorapodometro.data.remote
 
-import com.example.integradorapodometro.data.model.RecorridoDto
 import com.example.integradorapodometro.data.model.UserDto
-import retrofit2.http.*
+import com.example.integradorapodometro.data.model.RecorridoDto
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.DELETE
+import retrofit2.http.Path
+import retrofit2.http.PUT
 
 interface RecorridosApi {
 
-    // ---------- Auth (demo sencilla, sin tokens) ----------
+    // ---------- AUTH ----------
     @POST("users/login")
     suspend fun login(@Body user: UserDto): UserDto
 
     @POST("users/register")
     suspend fun register(@Body user: UserDto): UserDto
 
-    // ---------- Recorridos ----------
-    @GET("recorridos")
-    suspend fun getRecorridosGlobales(): List<RecorridoDto>
-
+    // ---------- RECORRIDOS ----------
     @GET("recorridos/usuario/{usuario}")
     suspend fun getRecorridosUsuario(
         @Path("usuario") usuario: String

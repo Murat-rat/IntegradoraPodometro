@@ -42,7 +42,7 @@ fun Navigation() {
         }
 
         // ---------- MIS RECORRIDOS ----------
-        composable("my_routes/{username}") { backStackEntry ->
+        composable(route = "my_routes/{username}") { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username") ?: ""
             MyRoutesScreen(
                 username = username,
@@ -54,6 +54,7 @@ fun Navigation() {
                 }
             )
         }
+
 
         // ---------- RECORRIDOS GLOBALES ----------
         composable("global_routes/{username}") { backStackEntry ->

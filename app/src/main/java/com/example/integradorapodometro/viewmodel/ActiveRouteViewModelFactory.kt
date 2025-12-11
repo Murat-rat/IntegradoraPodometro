@@ -7,9 +7,9 @@ class ActiveRouteViewModelFactory(
     private val usuario: String
 ) : ViewModelProvider.Factory {
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ActiveRouteViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return ActiveRouteViewModel(usuario) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

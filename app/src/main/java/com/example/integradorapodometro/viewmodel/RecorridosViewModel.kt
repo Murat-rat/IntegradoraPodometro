@@ -9,13 +9,13 @@ import com.example.integradorapodometro.data.repository.RecorridosRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
 data class RecorridosUiState(
     val misRecorridos: List<RecorridoDto> = emptyList(),
-    val globales: List<RecorridoDto> = emptyList(),
+    val globales: List<RecorridoDto> = emptyList(),   // ✅ este
     val isLoading: Boolean = false,
     val error: String? = null
 )
+
 
 class RecorridosViewModel(
     private val usuario: String
@@ -29,69 +29,34 @@ class RecorridosViewModel(
 
     init {
         cargarMisRecorridos()
-        cargarGlobales()
     }
 
     fun cargarMisRecorridos() {
         viewModelScope.launch {
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
+                _uiState.value = _uiState.value.copy(isLoading = true, error = null)
                 val lista = repo.obtenerPorUsuario(usuario)
                 _uiState.value = _uiState.value.copy(
                     misRecorridos = lista,
-                    isLoading = false,
-                    error = null
+                    isLoading = false
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    error = "Error al cargar mis recorridos"
+                    error = "Error al cargar: ${e.message}"
                 )
             }
         }
     }
 
-    fun cargarGlobales() {
-        viewModelScope.launch {
-            try {
-                val lista = repo.obtenerGlobales()
-                _uiState.value = _uiState.value.copy(globales = lista)
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = "Error al cargar globales"
-                )
-            }
-        }
-    }
-
-    fun borrarRecorrido(id: Int) {
+    fun borrar(id: Int) {
         viewModelScope.launch {
             try {
                 repo.borrar(id)
                 cargarMisRecorridos()
-                cargarGlobales()
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
-                    error = "No se pudo borrar el recorrido"
-                )
-            }
-        }
-    }
-
-    // UPDATE (PUT): ejemplo sencillo, incrementa 5 minutos
-    fun actualizarRecorrido(recorrido: RecorridoDto) {
-        val id = recorrido.id ?: return
-        viewModelScope.launch {
-            try {
-                val actualizado = recorrido.copy(
-                    tiempoMin = recorrido.tiempoMin + 5
-                )
-                repo.actualizar(id, actualizado)
-                cargarMisRecorridos()
-                cargarGlobales()
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = "No se pudo actualizar el recorrido"
+                    error = "No se pudo borrar: ${e.message}"
                 )
             }
         }

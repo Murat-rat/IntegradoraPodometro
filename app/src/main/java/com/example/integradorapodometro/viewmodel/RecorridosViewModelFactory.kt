@@ -7,9 +7,9 @@ class RecorridosViewModelFactory(
     private val usuario: String
 ) : ViewModelProvider.Factory {
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(RecorridosViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
             return RecorridosViewModel(usuario) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
