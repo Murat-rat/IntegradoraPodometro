@@ -19,7 +19,10 @@ import com.example.integradorapodometro.ui.components.InputField
 import com.example.integradorapodometro.viewmodel.LoginViewModel
 
 @Composable
-fun RegisterScreen(viewModel: RegisterViewModel, navController: NavController) {
+fun RegisterScreen(
+    viewModel: LoginViewModel,
+    navController: NavController
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -28,18 +31,25 @@ fun RegisterScreen(viewModel: RegisterViewModel, navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterVertically)
     ) {
 
-        Text("Inicio de Sesión")
+        Text("Inicio de Sesión", style = MaterialTheme.typography.titleLarge)
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = {}) {
-                Text("Iniciar Sesion")
+            // Botón login
+            Button(onClick = {
+                navController.navigate("login")
+            }) {
+                Text("Iniciar Sesión")
             }
 
-            Button(onClick = {}) {
+            // Botón registro (estás en esta pantalla)
+            Button(onClick = {
+                // Si tienes ruta de registro separada, aquí la navegas.
+                // navController.navigate("register")
+            }) {
                 Text("Registrarse")
             }
         }
@@ -64,13 +74,16 @@ fun RegisterScreen(viewModel: RegisterViewModel, navController: NavController) {
             )
         }
 
-        Button(onClick = {}) {
-            Text("Iniciar Sesion")
-            viewModel.login {
-                navController.navigate("menu") {
-                    popUpTo("login") { inclusive = true } // Evita volver al login
+        Button(
+            onClick = {
+                viewModel.login {
+                    navController.navigate("menu") {
+                        popUpTo("login") { inclusive = true } // Evita volver al login
+                    }
                 }
             }
+        ) {
+            Text("Iniciar Sesión")
         }
     }
 }
